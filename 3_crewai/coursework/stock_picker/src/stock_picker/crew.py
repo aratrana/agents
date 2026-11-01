@@ -42,7 +42,7 @@ class StockPicker():
                         model=self.agents_config['trending_company_finder']['llm'], # type: ignore[index]
                         base_url='https://ollama.com/v1',
                 ),
-                tools=[SerperDevTool()], memory=True
+                tools=[SerperDevTool()]
             )
     
     @agent
@@ -53,7 +53,7 @@ class StockPicker():
                         model=self.agents_config['financial_researcher']['llm'], # type: ignore[index]
                         base_url='https://ollama.com/v1',
                 ),
-                tools=[SerperDevTool()], memory=True
+                tools=[SerperDevTool()]
             )
 
     @agent
@@ -64,7 +64,7 @@ class StockPicker():
                         model=self.agents_config['stock_picker']['llm'], # type: ignore[index]
                         base_url='https://ollama.com/v1',
                 ),
-                tools=[send_push_notification], memory=True
+                tools=[send_push_notification]
             )
     
     @task
@@ -103,7 +103,5 @@ class StockPicker():
             tasks=self.tasks, 
             process=Process.hierarchical,
             verbose=True,
-            memory=True,
-            tracing=True,
-            manager_agent=manager
+            tracing=True
         )
