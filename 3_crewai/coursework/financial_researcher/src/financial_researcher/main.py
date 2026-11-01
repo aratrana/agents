@@ -13,15 +13,24 @@ warnings.filterwarnings("ignore", category=SyntaxWarning, module="pysbd")
 # Replace with inputs you want to test with, it will automatically
 # interpolate any tasks and agents information
 
+def _research_inputs(company: str) -> dict[str, str]:
+    company = company.strip()
+    if not company:
+        raise ValueError("Please provide a non-empty company name.")
+    now = datetime.now()
+    return {
+        'company': company,
+        'current_year': str(now.year),
+        'current_date': now.strftime('%Y-%m-%d'),
+    }
+
+
 def run():
     """
     Run the crew.
     """
-    company = input("Enter the company name for research: ")
-    inputs = {
-        'current_year': str(datetime.now().year),
-        'company': company
-    }
+    company: str = input("Enter the company name for research: ")
+    inputs = _research_inputs(company)
 
     try:
         FinancialResearcher().crew().kickoff(inputs=inputs)
@@ -33,10 +42,7 @@ def train():
     """
     Train the crew for a given number of iterations.
     """
-    inputs = {
-        "topic": "AI LLMs",
-        'current_year': str(datetime.now().year)
-    }
+    inputs = _research_inputs(input("Enter the company name for research: "))
     try:
         FinancialResearcher().crew().train(n_iterations=int(sys.argv[1]), filename=sys.argv[2], inputs=inputs)
 
@@ -57,10 +63,7 @@ def test():
     """
     Test the crew execution and returns the results.
     """
-    inputs = {
-        "topic": "AI LLMs",
-        "current_year": str(datetime.now().year)
-    }
+    inputs = _research_inputs(input("Enter the company name for research: "))
 
     try:
         FinancialResearcher().crew().test(n_iterations=int(sys.argv[1]), eval_llm=sys.argv[2], inputs=inputs)
@@ -82,10 +85,12 @@ def run_with_trigger():
     except json.JSONDecodeError:
         raise Exception("Invalid JSON payload provided as argument")
 
+    if not isinstance(trigger_payload, dict) or not isinstance(trigger_payload.get("company"), str):
+        raise ValueError("Trigger payload must be a JSON object with a string 'company' field.")
+
     inputs = {
+        **_research_inputs(trigger_payload["company"]),
         "crewai_trigger_payload": trigger_payload,
-        "topic": "",
-        "current_year": ""
     }
 
     try:

@@ -37,7 +37,17 @@ $ crewai run
 
 This command initializes the financial_researcher Crew, assembling the agents and assigning them tasks as defined in your configuration.
 
-This example, unmodified, will run the create a `report.md` file with the output of a research on LLMs in the root folder.
+The run prompts for a company name and writes the report to `output/report.md`.
+Run, training, and evaluation entry points prompt for the company and automatically
+supply `company`, `current_date` (`YYYY-MM-DD`), and `current_year` to the templates.
+Trigger runs require a JSON object with a non-empty `company` field, for example
+`{"company": "Microsoft"}`; the current date and year are supplied automatically.
+
+### Offline input tests
+
+Run `uv run python -m unittest discover -s tests` to check the entry-point inputs
+without calling Ollama or Serper or reading API keys. This is separate from
+`crewai test`, which evaluates the crew using live models.
 
 ## Understanding Your Crew
 
