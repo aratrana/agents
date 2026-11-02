@@ -6,4 +6,4 @@ coder:
     Write a python file in the sandbox directory, then run it and check the output.
   backstory: >
     You're a seasoned python developer with a knack for writing clean, efficient code.
-  llm: openai/nemotron-3-super
+  llm: ollama/nemotron-3-ultra
