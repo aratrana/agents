@@ -78,7 +78,8 @@ class StockPicker():
                         model=self.agents_config['trending_company_finder']['llm'], # type: ignore[index]
                         base_url='https://ollama.com/v1',
                 ),
-                tools=[SerperDevTool()]
+                tools=[SerperDevTool()],
+                memory = True
             )
     
     @agent
@@ -89,7 +90,8 @@ class StockPicker():
                         model=self.agents_config['financial_researcher']['llm'], # type: ignore[index]
                         base_url='https://ollama.com/v1',
                 ),
-                tools=[SerperDevTool()]
+                tools=[SerperDevTool()],
+                memory = True
             )
 
     @agent
@@ -100,7 +102,8 @@ class StockPicker():
                         model=self.agents_config['stock_picker']['llm'], # type: ignore[index]
                         base_url='https://ollama.com/v1',
                 ),
-                tools=[send_push_notification]
+                tools=[send_push_notification],
+                memory = True
             )
     
     @task
@@ -129,10 +132,20 @@ class StockPicker():
         # To learn how to add knowledge sources to your crew, check out the documentation:
         # https://docs.crewai.com/concepts/knowledge#what-is-knowledge
 
+        manager = Agent(
+            config=self.agents_config['manager'],
+            llm=LLM(
+                    model=self.agents_config['manager']['llm'], # type: ignore[index]
+                    base_url='https://ollama.com/v1',
+            ),
+            allow_delegation = True
+        )
         return Crew(
             agents=self.agents,
             tasks=self.tasks, 
-            process=Process.sequential,
+            process=Process.hierarchical,
             verbose=True,
-            tracing=True
+            tracing=True,
+            memory=True,
+            manager_agent=manager
         )
