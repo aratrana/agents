@@ -2,7 +2,8 @@ find_trending_companies:
   description: >
     Find the top trending companies in the news in {sector} as of {current_date} by searching the latest news. Find new companies that you've not found before.
   expected_output: >
-    A list of trending companies in {sector}
+    A JSON object with a companies array containing the trending companies in {sector}.
+    Each company must have name, ticker, and reason fields, all strings.
   agent: trending_company_finder
   output_file: output/trending_companies.json
 
@@ -10,7 +11,9 @@ research_trending_companies:
   description: >
     Given a list of trending companies, provide detailed analysis of each company in a report by searching online. Ensure research is up to date as of {current_date}.
   expected_output: >
-    A report containing detailed analysis of each company
+    A JSON object with a research_list array containing detailed analysis of each company.
+    Each entry must have name, market_position, future_outlook, and investment_potential
+    fields, all strings.
   agent: financial_researcher
   context:
     - find_trending_companies

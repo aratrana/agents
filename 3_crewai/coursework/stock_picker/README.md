@@ -20,7 +20,8 @@ crewai install
 ```
 ### Customizing
 
-**Add your `OPENAI_API_KEY` into the `.env` file**
+**Set `OLLAMA_API_KEY`, `SERPER_API_KEY`, `PUSHOVER_USER`, and `PUSHOVER_TOKEN`
+in your project's `.env` file. Keep credentials out of source control.**
 
 - Modify `src/stock_picker/config/agents.yaml` to define your agents
 - Modify `src/stock_picker/config/tasks.yaml` to define your tasks
@@ -37,7 +38,49 @@ $ crewai run
 
 This command initializes the stock_picker Crew, assembling the agents and assigning them tasks as defined in your configuration.
 
-This example, unmodified, will run the create a `report.md` file with the output of a research on LLMs in the root folder.
+The crew runs sequentially without a manager agent:
+
+1. Find trending companies.
+2. Research those companies using the first task's output.
+3. Pick a company using the research, send a push notification, and write the decision.
+
+Outputs are written to `output/trending_companies.json`,
+`output/research_report.json`, and `output/decision.md`.
+
+Templates require `sector` and `current_date`. The current `run()` uses
+`Technology` and supplies the year as `current_date`. Training, evaluation, and
+trigger entry points still use scaffold inputs (`topic`/`current_year`) and need
+updating before use. Those entry-point changes are intentionally deferred.
+
+### Offline regression tests
+
+Run `uv run python -m unittest discover -s tests -v`. The tests verify manager-free
+construction, task order, context dependencies, and template inputs. Provider clients
+and search are mocked; no API keys, searches, or push notifications are used.
+The three regression tests for the deferred entry-point fixes are explicitly skipped.
+
+### Structured JSON with Ollama Cloud
+
+The two research tasks keep using `ollama/nemotron-3-ultra` at
+`https://ollama.com/v1`. Their JSON schemas are included in the prompts, not sent
+as provider-enforced response formats. Function guardrails validate responses
+locally with Pydantic and return normalized JSON.
+
+Invalid JSON, missing fields, or incorrect field types produce validation
+feedback and up to two correction attempts. If validation still fails, the task
+raises an error before writing its output or running downstream tasks. Retries
+consume additional model requests and remain subject to account usage limits.
+
+Validated JSON is available in each research task's `TaskOutput.raw`, not
+`TaskOutput.pydantic` or `TaskOutput.json_dict`. Parse it with
+`TrendingCompanyList.model_validate_json(output.raw)` or
+`TrendingCompanyResearchList.model_validate_json(output.raw)` when a typed object
+is needed. The final decision remains a Markdown report.
+
+`ValidatedJSONTask` ensures files contain the accepted, normalized result;
+CrewAI 1.14.4 otherwise writes the original response after a guardrail correction.
+Failed runs do not overwrite existing output files, so files from an earlier run
+may still be present.
 
 ## Understanding Your Crew
 
